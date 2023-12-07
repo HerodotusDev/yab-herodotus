@@ -15,7 +15,7 @@ bun i
 
 ## Obtain Slot from Storage Layout
 
-### Using `[hardhat-storage-layout](https://www.npmjs.com/package/hardhat-storage-layout)`
+### Using [hardhat-storage-layout](https://www.npmjs.com/package/hardhat-storage-layout)
 
 ```bash
 bun storage-layout
