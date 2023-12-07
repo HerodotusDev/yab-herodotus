@@ -6,7 +6,7 @@ import { getSlots } from "./01-get-slots";
 const { yabContractAddress } = config;
 
 //? Paste your Herodotus Query ID here if you have one already and don't want to wait for another one
-let herodotusQueryId = "";
+let herodotusQueryId = "01HH2CCCJMJ7CM8K1D22CS3RRA";
 
 export async function proveWithHerodotus(
   slots: ReturnType<typeof getSlots>,
