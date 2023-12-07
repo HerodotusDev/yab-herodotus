@@ -7,11 +7,17 @@ You need these installed:
 - [Bun](https://bun.sh/)
 - [Foundry](https://getfoundry.sh/)
 
-First make sure you do:
+First make sure you:
 
-```bash
-bun i
-```
+- Copy the `.env.example` to `.env` and fill in the values.
+
+  - Get the Herodotus API key from [here](https://herodotus.dev/).
+  - You can get the RPC_URLs from [Alchemy](https://www.alchemy.com/), [Infura](https://infura.io/) or any other provider.
+
+- Run:
+  ```bash
+  bun i
+  ```
 
 ## Obtain Slot from Storage Layout
 
@@ -45,11 +51,13 @@ bun test get-slots
 
 ### [02-prove-slots.ts](./src/steps/02-prove-slots.ts)
 
+> Note: This step doesn't have a separate run script, please move to the next step.
+
 ## Access Proven Slots
 
 ### [03-access-slots.ts](./src/steps/03-access-slots.ts)
 
-## Run the whole flow
+### Run the whole flow
 
 ```bash
 bun start
