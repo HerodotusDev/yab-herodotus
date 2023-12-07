@@ -6,7 +6,7 @@ import { proveWithHerodotus } from "./steps/02-prove-with-herodotus";
  * A block number in which you want to prove storage, can be just:
  *
  * ```ts
- * const rpcUrl = env.RPC_URL;
+ * const rpcUrl = env.GOERLI_RPC_URL;
  * const rpc = new JsonRpcProvider(rpcUrl);
  * const blockNumber = await rpc.getBlockNumber();
  * ```

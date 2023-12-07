@@ -13,7 +13,7 @@ const {
 } = config;
 
 test("Storage slots are valid", async () => {
-  const rpcUrl = env.RPC_URL;
+  const rpcUrl = env.GOERLI_RPC_URL;
   const rpc = new JsonRpcProvider(rpcUrl);
   const { destAddressSlot, amountSlot } = getSlots();
 

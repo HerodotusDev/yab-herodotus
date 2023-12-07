@@ -21,7 +21,7 @@ export async function accessSlots(
   slots: ReturnType<typeof getSlots>,
   blockNumber: number
 ) {
-  const provider = new RpcProvider({ nodeUrl: env.STARKNET_PROVIDER_URL });
+  const provider = new RpcProvider({ nodeUrl: env.STARKNET_RPC_URL });
 
   const { abi } = await provider.getClassAt(
     herodotusFactsRegistryContractAddress
