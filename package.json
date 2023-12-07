@@ -1,0 +1,21 @@
+{
+  "name": "workshop",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "postinstall": "git submodule update --init",
+    "start": "bun run src/index.ts",
+    "storage-layout": "cd yet-another-bridge/contracts/solidity && forge install && forge inspect YABTransfer storage-layout --pretty"
+  },
+  "dependencies": {
+    "ethers": "latest",
+    "axios": "latest",
+    "starknet": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
