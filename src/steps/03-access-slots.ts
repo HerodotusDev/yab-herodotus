@@ -1,6 +1,6 @@
 import { getSlots } from "./01-get-slots";
 import config from "../config.json";
-import { Provider, Contract, Account, ec, json, RpcProvider } from "starknet";
+import { Contract, RpcProvider } from "starknet";
 import { env } from "bun";
 import { assert } from "ethers";
 
