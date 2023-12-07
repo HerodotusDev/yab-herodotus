@@ -1,4 +1,4 @@
-# YAB example
+# [YAB](https://github.com/GrindLabsOrg/yet-another-bridge) <> Herodotus
 
 ## Setup
 
