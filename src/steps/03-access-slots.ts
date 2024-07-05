@@ -19,12 +19,31 @@ const {
  *
  * I made it easier and put the Facts Registry contract address here:
  * https://sepolia.starkscan.co/contract/0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc
+ *
+ * Also, the source code for this contract is available here: https://github.com/HerodotusDev/herodotus-on-starknet/
  */
 const herodotusFactsRegistryContractAddress =
   "0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc";
 
 /**
  * In this step we will access the proven data that is available on-chain!
+ *
+ * There are two major ways of doing this:
+ *  - on-chain
+ *  - off-chain
+ *
+ * We will be now exploring an example of how to do it off-chain, however doing it on-chain is also very similar.
+ *
+ * The main steps are:
+ *  - get the facts registry contract
+ *  - figure out it's interface
+ *  - call the function you need
+ *
+ * The thing that is different is the execution and mainly last step
+ *  - off-chain - you call the contract through an RPC, get the results off-chain and do something with it, in our example we will focus on the `get_slot_value` function but there are more depending on what you're proving
+ *  - on-chain - you call the contract directly from your own contract and do something with the response
+ *
+ * As for what to do with something once you get it, this is entirely up to you and your idea.
  *
  * For this we again need:
  * @param slots - the slots that we want to access
@@ -111,6 +130,15 @@ export async function accessSlots(
     `Slot value is not correct, ${chainIdValue} !== ${chainIdAsNumber}`,
     "VALUE_MISMATCH"
   );
+
+  // This is it! To sum up, we have:
+  //  - analysed the contract we wanted to get the storage proofs from
+  //  - we got the storage slots
+  //  - we asked Herodotus Storage Proof API to prove the slots
+  //  - and finally we accessed the proven data on the destination chain.
+
+  // From here it's up to your own imagination!
+  // Have fun building with Storage Proofs!
 }
 
 //? Run this to test it out:

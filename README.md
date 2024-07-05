@@ -1,6 +1,6 @@
 # [YAB](https://github.com/GrindLabsOrg/yet-another-bridge) <> Herodotus
 
-This repo serves as a step by step tutorial on how to use storage proofs from start to end. It's showcasing it on the [YAB](https://github.com/GrindLabsOrg/yet-another-bridge) contracts, to be more precise, their `transfers` mapping. This is quite an advanced example of a storage proof, as mappings, especially ones with custom `bytes32` as key, are quite tricky to work with, however this allows this tutorial to relay more knowledge.
+This repo serves as a step by step tutorial on how to use storage proofs from start to end. It's showcasing it on the [YAB](https://github.com/GrindLabsOrg/yet-another-bridge) contracts, to be more precise, their `transfers` mapping. This is quite an advanced example of a storage proof, as mappings, especially ones with custom `bytes32` as key, are quite tricky to work with, however this allows this tutorial to relay more knowledge. Also, this tutorial focuses on accessing the proven data off-chain, an on-chain example will be available soon, however by following this you will probably be able to understand how to do it on-chain easily, the only thing that you have to do differently is the [3rd](#3-access-proven-slots) step, that one will be done on-chain.
 
 ## How to follow
 
