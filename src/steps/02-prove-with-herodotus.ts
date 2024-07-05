@@ -31,13 +31,13 @@ export async function proveWithHerodotus(
   //? Let's construct a query to the Herodotus Storage Proofs API
   const herodotusQuery = {
     // We need a destination chain - the chain where the proven data will be available
-    destinationChainId: "SN_GOERLI",
+    destinationChainId: "SN_SEPOLIA",
     // For testnets the fee is always 0, so don't worry about this
     fee: "0",
     // Now the data object, here we specify what we want and from where
     data: {
       // This key is saying from which chain we want to get the data from
-      "5": {
+      "11155111": {
         // Then we specify the "time" dimension - you can either use `block:<blockNumber>` or `timestamp:<timestamp>`
         [`block:${blockNumber}`]: {
           // To prove the storage slot we need to prove an account (the yab contract on starknet)
@@ -45,7 +45,11 @@ export async function proveWithHerodotus(
             // We provide the exact address of the account that has the slot
             [yabContractAddress]: {
               // And finally we pass the slot we want to prove
-              slots: [slots.destAddressSlot, slots.amountSlot],
+              slots: [
+                slots.destAddressSlot,
+                slots.amountSlot,
+                slots.isUsedAndChainIdSlot,
+              ],
             },
           },
         },
@@ -82,8 +86,13 @@ export async function proveWithHerodotus(
   // Let's print it out, you can also re-use this if you want to run this code again
   // Just put the query id in the herodotusQueryId at the top of this file
   console.log("Herodotus Query ID:", herodotusQueryId);
+  const url = `https://dashboard.herodotus.dev/explorer/query/${herodotusQueryId}`;
+  const clickableLink = `\x1b]8;;${url}\x1b\\${url}\x1b]8;;\x1b\\`;
+  console.log(`You can see the status of this query here: ${clickableLink}`);
   // Most of the time this will be done way faster, but be patient just in case
-  console.log("\nThis might take even 20 mins, sit back and relax :)");
+  console.log(
+    "\nThis might take even up to 20 mins (most of the queries are much faster), sit back and relax :)"
+  );
 
   // Now we will http pool to check the status of our query every minute
   // When you implement this yourself, the best way is to use our webhooks, but here for simplicity we will use http pool
@@ -118,7 +127,7 @@ export async function proveWithHerodotus(
     // Once the query is done
     if (queryStatus === "DONE") {
       // we log it to the console
-      console.log("\nQuery is done!");
+      console.log("\nQuery is done!\n");
       break;
     } else {
       // Otherwise, we log a dot

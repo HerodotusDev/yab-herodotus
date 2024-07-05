@@ -8,7 +8,7 @@ import { assert } from "ethers";
 const {
   yabContractAddress,
   testTransaction: {
-    input: { dstAddress, amount },
+    input: { dstAddress, chainId, value },
   },
 } = config;
 
@@ -18,10 +18,10 @@ const {
  * Use this page to see our most up to date deployments: https://herodotus.notion.site/8514ae5a125b4d4992fb6bd23c37c745?v=3166dbaeb11645e2a20d6fb348002922
  *
  * I made it easier and put the Facts Registry contract address here:
- * https://testnet.starkscan.co/contract/0x01b2111317eb693c3ee46633edd45a4876db14a3a53acdbf4e5166976d8e869d
+ * https://sepolia.starkscan.co/contract/0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc
  */
 const herodotusFactsRegistryContractAddress =
-  "0x01b2111317eb693c3ee46633edd45a4876db14a3a53acdbf4e5166976d8e869d";
+  "0x07d3550237ecf2d6ddef9b78e59b38647ee511467fe000ce276f245a006b40bc";
 
 /**
  * In this step we will access the proven data that is available on-chain!
@@ -35,7 +35,7 @@ export async function accessSlots(
   blockNumber: number
 ) {
   // We start off by initialising an RPC provider for starknet - our destination chain
-  const provider = new RpcProvider({ nodeUrl: env.STARKNET_RPC_URL });
+  const provider = new RpcProvider({ nodeUrl: env.SN_SEPOLIA_RPC_URL });
 
   // We get the abi of the contract - the interface of the contract
   const { abi } = await provider.getClassAt(
@@ -53,8 +53,9 @@ export async function accessSlots(
   // This mapping keeps the correct values of the slots - we know these from the example transaction inputs that we've gotten at step 1
   let slotsToCorrectValues = {
     [slots.destAddressSlot]: dstAddress,
-    [slots.amountSlot]: amount,
+    [slots.amountSlot]: value,
   };
+  const chainIdAsNumber = Number(BigInt(chainId));
 
   // Let's map through the correct values and see if they match what we've proven on-chain
   for (const [slot, correctValue] of Object.entries(slotsToCorrectValues)) {
@@ -76,6 +77,40 @@ export async function accessSlots(
       "VALUE_MISMATCH"
     );
   }
+
+  // Special treatment for the isUsedAndChainIdSlot
+  let slotValue = await contract.get_slot_value(
+    yabContractAddress,
+    blockNumber,
+    slots.isUsedAndChainIdSlot
+  );
+  // The slotValue needs formatting, let's make it into a hex string
+  slotValue = "0x" + slotValue.Some.toString(16).padStart(64, "0");
+
+  // We start of by converting the slot value to a BigInt
+  const slotValueBigInt = BigInt(slotValue);
+  // Then we get the least significant byte of the slot value and check if it is equal to one - this will give us the boolean isUsed
+  const isUsedValue = (slotValueBigInt & 0xffn) === 1n;
+  console.log("[ACCESS SLOTS]", { isUsedValue, correctValue: true });
+
+  // Then we skip the least significant byte we just read, get the next least significant byte and convert it to a number
+  const chainIdValue = Number((slotValueBigInt >> 8n) & 0xffn);
+  console.log("[ACCESS SLOTS]", {
+    chainIdValue,
+    correctValue: chainIdAsNumber,
+  });
+
+  // Finally let's double check if the proven data is the same as what we know is true!
+  assert(
+    isUsedValue === true,
+    `Slot value is not correct, ${isUsedValue} !== ${true}`,
+    "VALUE_MISMATCH"
+  );
+  assert(
+    chainIdValue === chainIdAsNumber,
+    `Slot value is not correct, ${chainIdValue} !== ${chainIdAsNumber}`,
+    "VALUE_MISMATCH"
+  );
 }
 
 //? Run this to test it out:

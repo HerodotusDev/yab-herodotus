@@ -17,7 +17,7 @@ First make sure you:
 
 - Copy the `.env.example` to `.env` and fill in the values.
 
-  - Get the Herodotus API key from [here](https://herodotus.dev/).
+  - Get the Herodotus API key from [here](https://dashboard.herodotus.dev/).
   - You can get the RPC_URLs from [Alchemy](https://www.alchemy.com/), [Infura](https://infura.io/) or any other provider. (I placed some free urls in the example end, they might work or not, you can try them out)
 
 - Run:

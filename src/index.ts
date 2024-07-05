@@ -1,19 +1,10 @@
 import { accessSlots } from "./steps/03-access-slots";
 import { getSlots } from "./steps/01-get-slots";
 import { proveWithHerodotus } from "./steps/02-prove-with-herodotus";
+import config from "./config.json";
 
-/**
- * A block number in which you want to prove storage, can be just:
- *
- * ```ts
- * const rpcUrl = env.GOERLI_RPC_URL;
- * const rpc = new JsonRpcProvider(rpcUrl);
- * const blockNumber = await rpc.getBlockNumber();
- * ```
- * ? we will take this block number as an example
- */
-export const blockNumber = 10173637;
-
+//? We will take the block number from config as example
+const blockNumber = config.blockNumber;
 //? Get the slots
 const slots = getSlots();
 //? Prove the slots with Herodotus
