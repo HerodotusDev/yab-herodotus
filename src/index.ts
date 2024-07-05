@@ -12,7 +12,7 @@ import { proveWithHerodotus } from "./steps/02-prove-with-herodotus";
  * ```
  * ? we will take this block number as an example
  */
-const blockNumber = 10173637;
+export const blockNumber = 10173637;
 
 //? Get the slots
 const slots = getSlots();
