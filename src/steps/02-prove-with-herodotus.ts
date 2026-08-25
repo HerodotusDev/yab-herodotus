@@ -3,12 +3,14 @@ import config from "../config.json";
 import { env, sleep } from "bun";
 import { getSlots } from "./01-get-slots";
 
+const MISSION_CONTROL_URL = "https://mission-control.api.herodotus.cloud";
+
 //? We get the yab contract address from the config.json file
 const { yabContractAddress } = config;
 
-//? If you run this program before you can paste your Herodotus Query ID here to speed things up
+//? If you run this program before you can paste your Herodotus Request ID here to speed things up
 // Note: if you changed something in what you want to send to Herodotus you need to keep this empty to send a new request.
-let herodotusQueryId = "";
+let herodotusRequestId = "";
 
 /**
  * Let's first prepare a function that will allow us to prove slots with Herodotus.
@@ -28,12 +30,10 @@ export async function proveWithHerodotus(
   slots: ReturnType<typeof getSlots>,
   blockNumber: number
 ) {
-  //? Let's construct a query to the Herodotus Storage Proofs API
+  //? Let's construct a query to the Herodotus Storage Proof API (Mission Control)
   const herodotusQuery = {
     // We need a destination chain - the chain where the proven data will be available
-    destinationChainId: "SN_SEPOLIA",
-    // For testnets the fee is always 0, so don't worry about this
-    fee: "0",
+    destination_chain_id: "SN_SEPOLIA",
     // Now the data object, here we specify what we want and from where
     data: {
       // This key is saying from which chain we want to get the data from
@@ -58,16 +58,17 @@ export async function proveWithHerodotus(
   };
 
   // This is just the check that skips sending a new request to Herodotus if you already sent one, don't worry about this
-  if (!herodotusQueryId) {
-    // Now we send the constructed query to Herodotus and get the response
+  if (!herodotusRequestId) {
+    // Now we send the constructed query to Mission Control and get the response
     const resp = await axios
-      .post<{ internalId: string }>(
-        "https://api.herodotus.cloud/submit-batch-query",
+      .post<{ status: string; request_id: string }>(
+        `${MISSION_CONTROL_URL}/submit-request`,
         herodotusQuery,
         {
-          params: {
+          headers: {
             // You need your Herodotus API key in the .env file to use this endpoint
-            apiKey: env.HERODOTUS_API_KEY,
+            "api-key": env.HERODOTUS_API_KEY as string,
+            "Content-Type": "application/json",
           },
         }
       )
@@ -76,57 +77,59 @@ export async function proveWithHerodotus(
         process.exit(1);
       });
 
-    // And finally let's save the internalId that we got from Herodotus to keep track of the progress of the query
+    // And finally let's save the request_id that we got from Herodotus to keep track of the progress of the query
     // We need this because the query might take a while
     // Think of this like a transaction hash of an on-chain transaction
     // You need it to see when the transaction (in our case query) is finished
-    herodotusQueryId = resp.data.internalId;
+    herodotusRequestId = resp.data.request_id;
   }
 
   // Let's print it out, you can also re-use this if you want to run this code again
-  // Just put the query id in the herodotusQueryId at the top of this file
-  console.log("Herodotus Query ID:", herodotusQueryId);
-  const url = `https://dashboard.herodotus.dev/explorer/query/${herodotusQueryId}`;
-  const clickableLink = `\x1b]8;;${url}\x1b\\${url}\x1b]8;;\x1b\\`;
-  console.log(`You can see the status of this query here: ${clickableLink}`);
+  // Just put the request id in the herodotusRequestId at the top of this file
+  console.log("Herodotus Request ID:", herodotusRequestId);
+  const url = `https://www.herodotus.cloud`;
+  console.log(`Track requests in the Herodotus Console: ${url}`);
   // Most of the time this will be done way faster, but be patient just in case
   console.log(
     "\nThis might take even up to 20 mins (most of the queries are much faster), sit back and relax :)"
   );
 
-  // Now we will http pool to check the status of our query every minute
-  // When you implement this yourself, the best way is to use our webhooks, but here for simplicity we will use http pool
-  // See the documentation to learn more about webhooks: https://api.herodotus.cloud/docs
+  // Now we will http poll to check the status of our query every few seconds
+  // When you implement this yourself, the best way is to use our webhooks, but here for simplicity we will use http poll
+  // See the documentation: https://docs.herodotus.cloud/storage-proofs-api/quick-start-guide
 
   // Let's begin with saving the current timestamp (in seconds)
   const timestamp = Date.now() / 1000;
-  // We will keep the pooling alive for 30 minutes, then we will timeout
+  // We will keep the polling alive for 30 minutes, then we will timeout
   const try_for = 60 * 30;
 
-  // This is the loop that will run until we get status DONE or it timeouts
+  // This is the loop that will run until every query reaches COMPLETED or it timeouts
   while (timestamp + try_for > Date.now() / 1000) {
-    // Now we ask the Herodotus API for the status of our query
+    // Now we ask Mission Control for the queries belonging to our request
     const resp = await axios
-      .get<{ queryStatus: string }>(
-        `https://api.herodotus.cloud/batch-query-status`,
-        {
-          params: {
-            // We have to pass in the query id
-            batchQueryId: herodotusQueryId,
-            // and the API key
-            apiKey: env.HERODOTUS_API_KEY,
-          },
-        }
-      )
+      .get<{
+        queries: Array<{ internal_id: string; status: string }>;
+      }>(`${MISSION_CONTROL_URL}/get_queries/${herodotusRequestId}`, {
+        headers: {
+          "api-key": env.HERODOTUS_API_KEY as string,
+        },
+      })
       .catch((err) => {
         console.error(err);
         process.exit(1);
       });
 
-    let queryStatus = resp.data.queryStatus;
-    // Once the query is done
-    if (queryStatus === "DONE") {
-      // we log it to the console
+    const queries = resp.data.queries ?? [];
+    const allDone =
+      queries.length > 0 &&
+      queries.every((q) => q.status === "COMPLETED" || q.status === "FAILED");
+    const anyFailed = queries.some((q) => q.status === "FAILED");
+
+    if (allDone) {
+      if (anyFailed) {
+        console.error("\nOne or more queries failed.\n");
+        process.exit(1);
+      }
       console.log("\nQuery is done!\n");
       break;
     } else {
